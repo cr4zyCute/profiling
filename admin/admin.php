@@ -41,7 +41,9 @@ $result = mysqli_query($conn, $query);
         <a href="#" onclick="loadSection('dashboard')">Dashboard</a>
         <a href="#" onclick="loadSection('studentList')">Student List</a>
         <a href="#" onclick="loadSection('report')">Generate Reports</a>
-        <a href="logout.php">Logout</a>
+        <a href="announcement.php">Announcement</a>
+        <a href="../form.php">Form</a>
+        <a href="adminlogout.php">Logout</a>
     </div>
 
     <?php
@@ -67,7 +69,7 @@ $result = mysqli_query($conn, $query);
     <div class="main-content">
         <div id="dashboardSection" class="section">
             <h1>Welcome to the Dashboard</h1>
-            <p>Use the sidebar to navigate through the sections.</p>
+
 
             <div class="boxes">
                 <div class="box">
@@ -93,13 +95,14 @@ $result = mysqli_query($conn, $query);
             </div>
         </div>
 
+
         <div id="studentListSection" class="section" style="display:none;">
             <h2>Registered Students</h2>
             <a href="../studentRegistration.php">
                 <button>Add a Student</button>
             </a>
 
-            <!-- Live Search Input -->
+
             <input type="text" id="searchInput" placeholder="Search by first name, middle name, last name, or email" onkeyup="liveSearch()" />
 
             <table id="studentTable">
@@ -136,7 +139,20 @@ $result = mysqli_query($conn, $query);
 
         <div id="reportSection" class="section" style="display:none;">
             <h2>Student Report</h2>
-            <table>
+
+            <!-- Search Input -->
+            <input
+                type="text"
+                id="reportSearchInput"
+                placeholder="Search by Status, Section, or Year Level"
+                onkeyup="searchReportTable()" />
+
+            <button onclick="resetSearch()">Close</button>
+            <!-- Print Button -->
+            <button onclick="printTable()">Print Table</button>
+            <button onclick="downloadTableAsCSV()">Download</button>
+
+            <table id="reportTable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -172,7 +188,7 @@ $result = mysqli_query($conn, $query);
                             echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['year_level']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['section']) . "</td>";
+                            echo "<td>" . " Section " . htmlspecialchars($row['section']) . "</td>"; // Append " Section"
                             echo "</tr>";
                         }
                     } else {
@@ -182,29 +198,142 @@ $result = mysqli_query($conn, $query);
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <script>
-        function liveSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            rows.forEach(row => {
-                const cells = row.getElementsByTagName('td');
-                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-                row.style.display = rowText.includes(query) ? '' : 'none';
-            });
-        }
+        <script>
+            function downloadTableAsCSV() {
+                const table = document.getElementById("reportTable");
+                const rows = Array.from(table.querySelectorAll("tr"));
+                const visibleRows = rows.filter(row => row.style.display !== "none"); // Get only visible rows
+                let csvContent = "";
 
-        function loadSection(section) {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(sec => (sec.style.display = 'none'));
-            document.getElementById(section + 'Section').style.display = 'block';
-        }
+                // Loop through visible rows and construct the CSV content
+                visibleRows.forEach(row => {
+                    const cells = Array.from(row.querySelectorAll("th, td"));
+                    const rowContent = cells
+                        .map(cell => {
+                            // Clean up content and escape double quotes
+                            return `"${cell.innerText.replace(/"/g, '""')}"`;
+                        })
+                        .join(",");
+                    csvContent += rowContent + "\n";
+                });
 
-        function redirectToUpdate(studentId) {
-            window.location.href = `studentUpdateForm.php?id=${studentId}`;
-        }
-    </script>
+                // Create a Blob with the CSV content and trigger a download
+                const blob = new Blob([csvContent], {
+                    type: "text/csv"
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "filtered_table.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        </script>
+
+
+        <script>
+            function searchReportTable() {
+                const query = document.getElementById('reportSearchInput').value.toLowerCase().trim();
+                const rows = document.querySelectorAll('#reportTable tbody tr');
+
+                rows.forEach(row => {
+                    const firstName = row.cells[2]?.textContent.trim().toLowerCase() || '';
+                    const middleName = row.cells[3]?.textContent.trim().toLowerCase() || '';
+                    const lastName = row.cells[4]?.textContent.trim().toLowerCase() || '';
+                    const email = row.cells[5]?.textContent.trim().toLowerCase() || '';
+                    const status = row.cells[6]?.textContent.trim().toLowerCase() || '';
+                    const yearLevel = row.cells[7]?.textContent.trim().toLowerCase() || '';
+                    const section = row.cells[8]?.textContent.trim().toLowerCase() || '';
+
+                    // Check if query matches any column or matches the full "Section" phrase
+                    const matchesOtherColumns =
+                        firstName.includes(query) ||
+                        middleName.includes(query) ||
+                        lastName.includes(query) ||
+                        email.includes(query) ||
+                        status === query || // Exact match for "status" (e.g., "Regular" or "Irregular")
+                        yearLevel.includes(query);
+
+                    const matchesSection = section.includes(query); // Match full section (e.g., "Section B")
+
+                    // Display the row if it matches
+                    if (matchesSection || matchesOtherColumns) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            function resetSearch() {
+                document.getElementById('reportSearchInput').value = '';
+                const rows = document.querySelectorAll('#reportTable tbody tr');
+
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+            }
+
+            function printTable() {
+                const originalContent = document.body.innerHTML;
+                const tableContent = document.getElementById('reportTable').outerHTML;
+
+                document.body.innerHTML = `
+            <html>
+                <head>
+                    <title>Print Student Report</title>
+                    <style>
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        table, th, td {
+                            border: 1px solid black;
+                        }
+                        th, td {
+                            padding: 8px;
+                            text-align: left;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Student Report</h1>
+                    ${tableContent}
+                </body>
+            </html>
+        `;
+
+                // Trigger print
+                window.print();
+
+                // Restore original content after printing
+                document.body.innerHTML = originalContent;
+                window.location.reload(); // Reload the page to restore functionality
+            }
+        </script>
+        <script>
+            function liveSearch() {
+                const query = document.getElementById('searchInput').value.toLowerCase();
+                const rows = document.querySelectorAll('#studentTable tbody tr');
+                rows.forEach(row => {
+                    const cells = row.getElementsByTagName('td');
+                    const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                    row.style.display = rowText.includes(query) ? '' : 'none';
+                });
+            }
+
+            function loadSection(section) {
+                const sections = document.querySelectorAll('.section');
+                sections.forEach(sec => (sec.style.display = 'none'));
+                document.getElementById(section + 'Section').style.display = 'block';
+            }
+
+            function redirectToUpdate(studentId) {
+                window.location.href = `studentUpdateForm.php?id=${studentId}`;
+            }
+        </script>
 </body>
 
 </html>

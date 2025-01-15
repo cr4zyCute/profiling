@@ -1,0 +1,124 @@
+/* Global Style */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1d3557, #457b9d, #a8dadc);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
+    color: #fff;
+}
+
+/* Gradient Animation */
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Login Card */
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #333;
+}
+
+.login-header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #1d3557;
+}
+
+.login-header p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    color: #457b9d;
+}
+
+/* Input Groups */
+.input-group {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #457b9d;
+    outline: none;
+    box-shadow: 0 0 5px rgba(69, 123, 157, 0.5);
+}
+
+/* Login Button */
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.btn-login:hover {
+    background: #1d3557;
+    box-shadow: 0 4px 10px rgba(29, 53, 87, 0.5);
+}
+
+/* Additional Links */
+.additional-links {
+    margin-top: 15px;
+}
+
+.additional-links a {
+    color: #457b9d;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.additional-links a:hover {
+    color: #1d3557;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 20px;
+    }
+
+    .login-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .login-header p {
+        font-size: 0.9rem;
+    }
+}

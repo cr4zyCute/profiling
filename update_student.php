@@ -51,6 +51,6 @@ foreach ($_POST as $key => $value) {
 }
 
     $conn->close();
-    header("Location: studentProfile.php");
+    header("Location: student.php");
     exit();
 }

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Check if the password matches (without hashing)
         if ($password === $stored_password) {
             $_SESSION['student_id'] = $id;
-            header("Location: studentProfile.php");
+            header("Location: student.php");
             exit();
         } else {
             echo "Invalid password.";
@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/index.css">
     <title>Document</title>
 </head>
 

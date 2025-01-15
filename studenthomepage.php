@@ -6,10 +6,16 @@ if (!isset($_SESSION['student_id'])) {
     header("Location: login.php");
     exit();
 }
-
-// Fetch posts
+$student_id = $_SESSION['student_id'];
+$stmt = $conn->prepare("SELECT profile_image FROM student WHERE id = ?");
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$stmt->bind_result($profile_image);
+$stmt->fetch();
+$stmt->close();
+// Fetch posts, including profile_image
 $sql = "SELECT posts.post_id, posts.content AS post_content, posts.media_path, posts.created_at AS post_date, 
-        student.first_name, student.last_name,
+        student.first_name, student.last_name, student.profile_image,
         (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.post_id) AS like_count
         FROM posts
         JOIN student ON posts.student_id = student.id
@@ -115,17 +121,16 @@ function displayComments($post_id, $parent_comment_id = null, $conn, $level = 0)
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="./css/homepage.css"> -->
     <title>Homepage</title>
+    <link rel="stylesheet" href="./css/homepage.css">
+
     <script>
- 
         function toggleComments(postId) {
             var commentsSection = document.getElementById('comments-' + postId);
             var button = document.getElementById('toggle-comments-btn-' + postId);
@@ -142,7 +147,27 @@ function displayComments($post_id, $parent_comment_id = null, $conn, $level = 0)
 </head>
 
 <body>
-    <h1>Welcome to the Student Homepage</h1>
+    <header class="header">
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#annoucement">Announcements</a>
+        </nav>
+        <div class="profile">
+            <div class="dropdown">
+                <a href="#">
+                    <img src="<?= htmlspecialchars(string: './' . $profile_image); ?>" alt="Profile Image" class="profile-img">
+                </a>
+                <div class="dropdown-content">
+                    <a href="student.php">View Profile</a>
+                    <a href="includes/logout.php">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <h1>Whats on Your Mind ?</h1>
     <form method="post" enctype="multipart/form-data">
         <textarea name="content" placeholder="What's on your mind?"></textarea><br>
         <label for="media">Upload Media:</label>
@@ -150,34 +175,80 @@ function displayComments($post_id, $parent_comment_id = null, $conn, $level = 0)
         <button type="submit" name="new_post">Post</button>
     </form>
     <hr>
-    <h2>Posts</h2>
+    <div class="annoucement" id="annoucement">
+
+        <?php
+        // Fetch announcements
+        $announcement_sql = "SELECT content, created_at FROM announcements ORDER BY created_at DESC";
+        $announcement_result = $conn->query($announcement_sql);
+
+        if ($announcement_result->num_rows > 0): ?>
+            <h2>Announcements</h2>
+            <div class="announcements-section">
+                <?php while ($announcement = $announcement_result->fetch_assoc()): ?>
+                    <div class="announcement">
+                        <p><?= htmlspecialchars($announcement['content']); ?></p>
+                        <small>Posted on: <?= htmlspecialchars($announcement['created_at']); ?></small>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        <?php else: ?>
+            <p>No announcements available.</p>
+        <?php endif; ?>
+
+    </div>
+    <h2 id="home">Posts</h2>
+
     <?php while ($post = $posts_result->fetch_assoc()): ?>
-        <div>
-            <h3><?php echo $post['first_name'] . ' ' . $post['last_name']; ?></h3>
+        <div class="post">
+            <div class="profile-section">
+                <img style="width: 45px; height:45px; border-radius: 50%; " src="<?= htmlspecialchars($post['profile_image']); ?>"
+                    alt="Profile Image"
+                    class="profile-image">
+                <h3><?= htmlspecialchars($post['first_name'] . ' ' . $post['last_name']); ?></h3>
+            </div>
             <?php if (!empty($post['post_content'])): ?>
                 <p><?php echo htmlspecialchars($post['post_content']); ?></p>
             <?php endif; ?>
             <?php if (!empty($post['media_path'])): ?>
-                <img src="<?php echo $post['media_path']; ?>" alt="Media" style="max-width: 100%; height: auto;">
+                <img src="<?php echo $post['media_path']; ?>" alt="Media">
             <?php endif; ?>
             <small>Posted on: <?php echo $post['post_date']; ?></small><br>
             <a href="like.php?post_id=<?php echo $post['post_id']; ?>">Like</a> (<?php echo $post['like_count']; ?>)
-            <form method="post" style="margin-top: 10px;">
-                <input type="hidden" name="post_id" value="<?php echo $post['post_id']; ?>">
-                <textarea name="comment_content" placeholder="Write a comment..." required></textarea><br>
-                <button type="submit" name="new_comment">Comment</button>
-            </form>
+
 
             <!-- Show/Hide comments button -->
-            <button id="toggle-comments-btn-<?php echo $post['post_id']; ?>" onclick="toggleComments(<?php echo $post['post_id']; ?>)">Show Comments</button>
+            <button id="toggle-comments-btn-<?php echo $post['post_id']; ?>" onclick="toggleComments(<?php echo $post['post_id']; ?>)"> Comments</button>
 
             <!-- Comments section -->
-            <div id="comments-<?php echo $post['post_id']; ?>" style="margin-left: 20px; display: none;">
+            <div id="comments-<?php echo $post['post_id']; ?>" class="comments-section">
                 <?php displayComments($post['post_id'], null, $conn); ?>
+                <form method="post" style="margin-top: 10px;">
+                    <input type="hidden" name="post_id" value="<?php echo $post['post_id']; ?>">
+                    <textarea name="comment_content" placeholder="Write a comment..." required></textarea><br>
+                    <button type="submit" name="new_comment">Comment</button>
+                </form>
             </div>
         </div>
-        <hr>
     <?php endwhile; ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownContent.style.display =
+                    dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', function() {
+                dropdownContent.style.display = 'none';
+            });
+        });
+    </script>
+
 </body>
 
 </html>
