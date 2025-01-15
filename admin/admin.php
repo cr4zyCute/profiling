@@ -14,20 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_student'])) {
 
     if ($stmt->execute()) {
         echo "Student added successfully.<br>";
-
-        // Display additional fields (Status, Year Level, Section) and any custom fields
-        echo "<h3>Submitted Details:</h3>";
-        echo "<p><strong>Status:</strong> " . htmlspecialchars($_POST['status']) . "</p>";
-        echo "<p><strong>Year Level:</strong> " . htmlspecialchars($_POST['year_level']) . "</p>";
-        echo "<p><strong>Section:</strong> " . htmlspecialchars($_POST['section']) . "</p>";
-
-        // Process custom fields
-        if (!empty($_POST['customFieldName']) && !empty($_POST['customFieldValue'])) {
-            foreach ($_POST['customFieldName'] as $index => $fieldName) {
-                $fieldValue = $_POST['customFieldValue'][$index];
-                echo "<p><strong>" . htmlspecialchars($fieldName) . ":</strong> " . htmlspecialchars($fieldValue) . "</p>";
-            }
-        }
     } else {
         echo "Error adding student: " . $stmt->error;
     }
@@ -46,81 +32,179 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script>
-        // Add custom fields dynamically
-        function addField() {
-            const container = document.getElementById('customFields');
-            const fieldDiv = document.createElement('div');
-            fieldDiv.innerHTML = `
-                <input type="text" name="customFieldName[]" placeholder="Field Name" required>
-                <input type="text" name="customFieldValue[]" placeholder="Field Value" required>
-                <button type="button" onclick="this.parentNode.remove()">Remove</button>
-            `;
-            container.appendChild(fieldDiv);
-        }
-    </script>
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
 
 <body>
-    <h1>Admin Panel</h1>
-    <h2>Registered Students</h2>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <a href="#" onclick="loadSection('dashboard')">Dashboard</a>
+        <a href="#" onclick="loadSection('studentList')">Student List</a>
+        <a href="#" onclick="loadSection('report')">Generate Reports</a>
+        <a href="logout.php">Logout</a>
+    </div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Middle Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-                <tr>
-                    <td><?= $row['id']; ?></td>
-                    <td><?= htmlspecialchars($row['first_name']); ?></td>
-                    <td><?= htmlspecialchars($row['middle_name']); ?></td>
-                    <td><?= htmlspecialchars($row['last_name']); ?></td>
-                    <td><?= htmlspecialchars($row['email']); ?></td>
-                </tr>
-            <?php } ?>
-        </tbody>
-    </table>
+    <?php
+    $firstYearQuery = "SELECT COUNT(*) AS first_year FROM student WHERE year_level = '1st year' OR year_level = 'First Year'";
+    $secondYearQuery = "SELECT COUNT(*) AS second_year FROM student WHERE year_level = '2nd year' OR year_level = 'Second Year'";
+    $thirdYearQuery = "SELECT COUNT(*) AS third_year FROM student WHERE year_level = '3rd year' OR year_level = 'Third Year'";
+    $fourthYearQuery = "SELECT COUNT(*) AS fourth_year FROM student WHERE year_level = '4th year' OR year_level = 'Fourth Year'";
 
-<h2>Form</h2>
-    <form method="POST">
-        <label>First Name:</label><br>
-        <input type="text" name="first_name" required><br>
+    $totalStudentsQuery = "SELECT COUNT(*) AS total_students FROM student";
+    $firstYearResult = mysqli_query($conn, $firstYearQuery);
+    $secondYearResult = mysqli_query($conn, $secondYearQuery);
+    $thirdYearResult = mysqli_query($conn, $thirdYearQuery);
+    $fourthYearResult = mysqli_query($conn, $fourthYearQuery);
+    $totalStudentsResult = mysqli_query($conn, $totalStudentsQuery);
 
-        <label>Middle Name:</label><br>
-        <input type="text" name="middle_name"><br>
+    $firstYearCount = mysqli_fetch_assoc($firstYearResult)['first_year'];
+    $secondYearCount = mysqli_fetch_assoc($secondYearResult)['second_year'];
+    $thirdYearCount = mysqli_fetch_assoc($thirdYearResult)['third_year'];
+    $fourthYearCount = mysqli_fetch_assoc($fourthYearResult)['fourth_year'];
 
-        <label>Last Name:</label><br>
-        <input type="text" name="last_name" required><br>
+    $totalStudents = mysqli_fetch_assoc($totalStudentsResult)['total_students'];
+    ?>
+    <div class="main-content">
+        <div id="dashboardSection" class="section">
+            <h1>Welcome to the Dashboard</h1>
+            <p>Use the sidebar to navigate through the sections.</p>
 
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br>
+            <div class="boxes">
+                <div class="box">
+                    <h3>Total Students</h3>
+                    <p><?= $totalStudents; ?></p>
+                </div>
+                <div class="box">
+                    <h3>1st Year Students</h3>
+                    <p><?= $firstYearCount; ?></p>
+                </div>
+                <div class="box">
+                    <h3>2nd Year Students</h3>
+                    <p><?= $secondYearCount; ?></p>
+                </div>
+                <div class="box">
+                    <h3>3rd Year Students</h3>
+                    <p><?= $thirdYearCount; ?></p>
+                </div>
+                <div class="box">
+                    <h3>4th Year Students</h3>
+                    <p><?= $fourthYearCount; ?></p>
+                </div>
+            </div>
+        </div>
 
-        <label>Status:</label><br>
-        <select name="status" required>
-            <option value="Regular">Regular</option>
-            <option value="Irregular">Irregular</option>
-        </select><br>
+        <div id="studentListSection" class="section" style="display:none;">
+            <h2>Registered Students</h2>
+            <a href="../studentRegistration.php">
+                <button>Add a Student</button>
+            </a>
 
-        <label>Year Level:</label><br>
-        <input type="text" name="year_level" placeholder="e.g., First Year, Second Year" required><br>
+            <!-- Live Search Input -->
+            <input type="text" id="searchInput" placeholder="Search by first name, middle name, last name, or email" onkeyup="liveSearch()" />
 
-        <label>Section:</label><br>
-        <input type="text" name="section" placeholder="e.g., A, B, C" required><br>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Profile Image</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                        <tr onclick="redirectToUpdate(<?= $row['id']; ?>)">
+                            <td><?= $row['id']; ?></td>
+                            <td>
+                                <?php if (!empty($row['profile_image'])): ?>
+                                    <img src="<?= htmlspecialchars('../' . $row['profile_image']); ?>" alt="Profile Image" width="50" height="50">
+                                <?php else: ?>
+                                    <img src="default-profile.png" alt="Default Profile" width="50" height="50">
+                                <?php endif; ?>
+                            </td>
+                            <td><?= htmlspecialchars($row['first_name']); ?></td>
+                            <td><?= htmlspecialchars($row['middle_name']); ?></td>
+                            <td><?= htmlspecialchars($row['last_name']); ?></td>
+                            <td><?= htmlspecialchars($row['email']); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
 
-        <h3>Additional Fields</h3>
-        <div id="customFields"></div>
-        <button type="button" onclick="addField()">Add Field</button><br><br>
+        <div id="reportSection" class="section" style="display:none;">
+            <h2>Student Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Profile Image</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Year Level</th>
+                        <th>Section</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $studentQuery = "SELECT * FROM student";
+                    $studentResult = mysqli_query($conn, $studentQuery);
 
-        <button type="submit" name="submit_student">Submit</button>
-    </form>
+                    if ($studentResult && mysqli_num_rows($studentResult) > 0) {
+                        while ($row = mysqli_fetch_assoc($studentResult)) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['id']) . "</td>";
+                            echo "<td>";
+                            if (!empty($row['profile_image'])) {
+                                echo "<img src='../" . htmlspecialchars($row['profile_image']) . "' alt='Profile Image' width='50' height='50'>";
+                            } else {
+                                echo "<img src='default-profile.png' alt='Default Profile' width='50' height='50'>";
+                            }
+                            echo "</td>";
+                            echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['middle_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['last_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['status']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['year_level']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['section']) . "</td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='9'>No data found</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function liveSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                row.style.display = rowText.includes(query) ? '' : 'none';
+            });
+        }
+
+        function loadSection(section) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(sec => (sec.style.display = 'none'));
+            document.getElementById(section + 'Section').style.display = 'block';
+        }
+
+        function redirectToUpdate(studentId) {
+            window.location.href = `studentUpdateForm.php?id=${studentId}`;
+        }
+    </script>
 </body>
 
 </html>

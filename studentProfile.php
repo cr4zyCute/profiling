@@ -3,11 +3,16 @@ session_start();
 include './database/db.php';
 
 // Check if student is logged in
-if (!isset($_SESSION['student_id'])) {
-    header("Location: index.php");
-    exit();
-}
 
+if (isset($_GET['id'])) {
+    $id = (int)$_GET['id'];
+    $query = "SELECT * FROM student WHERE id = $id";
+    $result = mysqli_query($conn, $query);
+    $student = mysqli_fetch_assoc($result);
+    if (!$student) {
+        die('Student not found.');
+    }
+}
 // Fetch the user details
 $stmt = $conn->prepare("SELECT first_name, middle_name, last_name, profile_image, email, status, year_level, section FROM student WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['student_id']);
@@ -57,7 +62,7 @@ $conn->close();
     <h2>Welcome, <?php echo htmlspecialchars($first_name . " " . $middle_name . " " . $last_name); ?></h2>
 
     <?php if ($profile_image): ?>
-        <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Image" style="width:150px;height:150px;"><br>
+        <img src="<?= htmlspecialchars('./' . $profile_image); ?>" alt="Profile Image" style="width:150px;height:150px;">
     <?php else: ?>
         <p>No profile image available.</p>
     <?php endif; ?>

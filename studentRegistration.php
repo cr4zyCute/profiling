@@ -1,16 +1,12 @@
 <?php
-
 include './database/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-
     $first_name = $_POST['first_name'];
     $middle_name = $_POST['middle_name'];
     $last_name = $_POST['last_name'];
     $email = $_POST['email'];
-    $password = $_POST['password'];
-    $password = $_POST['password'];
+    $password = $_POST['password']; // No hashing here, use plain text
 
     $target_dir = "uploads/";
     if (!is_dir($target_dir)) {
@@ -26,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
+    // Insert the plain text password into the database
     $stmt = $conn->prepare("INSERT INTO student (first_name, middle_name, last_name, email, password, profile_image) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("ssssss", $first_name, $middle_name, $last_name, $email, $password, $target_file);
 

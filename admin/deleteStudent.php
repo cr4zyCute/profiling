@@ -2,13 +2,14 @@
 include '../database/db.php';
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $query = "DELETE FROM student WHERE id = $id";
+    $id = (int)$_GET['id'];
+    $stmt = $conn->prepare("DELETE FROM student WHERE id = ?");
+    $stmt->bind_param("i", $id);
 
-    if (mysqli_query($conn, $query)) {
-        echo "Student deleted successfully.";
-        header("Location: student.php");
+    if ($stmt->execute()) {
+        header("Location: admin.php");
+        exit;
     } else {
-        echo "Error deleting student: " . mysqli_error($conn);
+        echo "Error deleting student: " . $stmt->error;
     }
 }

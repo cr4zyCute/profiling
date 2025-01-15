@@ -3,7 +3,6 @@ session_start();
 include './database/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
     $email = $_POST['email'];
     $password = $_POST['password'];
 
@@ -16,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_result($id, $stored_password);
         $stmt->fetch();
 
-        // Use password_verify to check the password
-        if (password_verify($password, $stored_password)) {
+        // Check if the password matches (without hashing)
+        if ($password === $stored_password) {
             $_SESSION['student_id'] = $id;
             header("Location: studentProfile.php");
             exit();
@@ -32,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->close();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
