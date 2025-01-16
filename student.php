@@ -101,9 +101,9 @@ $conn->close();
             <div class="info-section">
                 <div class="info-box">
                     <h4>Information</h4>
-                    <p>First Name: Nikki</p>
-                    <p>Middle Name: Sixx</p>
-                    <p>Last Name: Acosta</p>
+                    <p>First Name: <?php echo htmlspecialchars($first_name); ?></p>
+                    <p>Middle Name: <?php echo htmlspecialchars(string: $middle_name); ?></p>
+                    <p>Last Name: <?php echo htmlspecialchars(string: $last_name); ?></p>
 
                     <p>Section: <?php echo htmlspecialchars($section); ?></p>
                     <p>Year Leve: <?php echo htmlspecialchars($year_level); ?></p>
