@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_announcement'])
             color: #224abe;
         }
 
-        /* Form Styles */
+        
         form {
             background: #f7f9fc;
             padding: 25px;

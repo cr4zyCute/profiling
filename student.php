@@ -290,11 +290,7 @@ $conn->close();
 
         <div class="container">
             <h1>My Posts</h1>
-            <form method="post" enctype="multipart/form-data">
-                <textarea name="content" placeholder="What's on your mind?" required></textarea><br>
-                <input type="file" name="media"><br>
-                <button type="submit" name="new_post">Post</button>
-            </form>
+
             <hr>
             <?php while ($post = $posts_result->fetch_assoc()): ?>
                 <div class="post-container">

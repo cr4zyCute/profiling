@@ -1,5 +1,11 @@
 <?php
+session_start(); // Ensure session is started
 include '../database/db.php';
+
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: login_admin.php');
+    exit;
+}
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_student'])) {
@@ -24,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_student'])) {
 $query = "SELECT * FROM student";
 $result = mysqli_query($conn, $query);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

@@ -39,12 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('Failed to save profile picture.');
     }
 
-    // Hash the password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insert admin into database
+    // Store plain text password (not recommended in production)
     $stmt = $conn->prepare("INSERT INTO admins (username, email, password, profile_picture) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $username, $email, $hashed_password, $file_name);
+    $stmt->bind_param("ssss", $username, $email, $password, $file_name);
 
     if ($stmt->execute()) {
         echo "Registration successful. <a href='login_admin.php'>Login here</a>";
@@ -53,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
