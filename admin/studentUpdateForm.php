@@ -240,31 +240,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="file" name="profile_image" accept="image/*">
 
             <label>First Name:</label>
-            <input type="text" name="first_name" value="<?= htmlspecialchars($student['first_name']); ?>" required>
+            <input type="text" name="first_name" value="<?= htmlspecialchars($student['first_name']); ?>">
 
             <label>Middle Name:</label>
             <input type="text" name="middle_name" value="<?= htmlspecialchars($student['middle_name']); ?>">
 
             <label>Last Name:</label>
-            <input type="text" name="last_name" value="<?= htmlspecialchars($student['last_name']); ?>" required>
+            <input type="text" name="last_name" value="<?= htmlspecialchars($student['last_name']); ?>">
 
             <label>Email:</label>
-            <input type="email" name="email" value="<?= htmlspecialchars($student['email']); ?>" required>
+            <input type="email" name="email" value="<?= htmlspecialchars($student['email']); ?>">
 
             <label>Status:</label>
-            <select name="status" required>
+            <select name="status">
                 <option value="Regular" <?= $student['status'] === 'Regular' ? 'selected' : ''; ?>>Regular</option>
                 <option value="Irregular" <?= $student['status'] === 'Irregular' ? 'selected' : ''; ?>>Irregular</option>
             </select>
 
             <label>Year Level:</label>
-            <input type="text" name="year_level" value="<?= htmlspecialchars($student['year_level']); ?>" required>
+            <input type="text" name="year_level" value="<?= htmlspecialchars($student['year_level']); ?>">
 
             <label>Section:</label>
-            <input type="text" name="section" value="<?= htmlspecialchars($student['section']); ?>" required>
-        </div>
+            <input type="text" name="section" value="<?= htmlspecialchars($student['section']); ?>"
 
-        <div class="additional-info">
+                <div class="additional-info">
             <h3>Additional Fields</h3>
             <?php foreach ($formFields as $field): ?>
                 <label for="<?= htmlspecialchars($field['field_name']); ?>"><?= htmlspecialchars($field['field_name']); ?>:</label>
@@ -275,7 +274,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-buttons">
             <button style="margin-bottom: 10px;" type="submit">Update</button>
             <button type="button" onclick="printProfile()">Print</button>
-            <a href="deleteStudent.php?id=<?= $student_id; ?>" onclick="return confirm('Are you sure you want to delete this student?')"><button>Delete</button></a>
+            <a href="deleteStudent.php?id=<?= $student_id; ?>" onclick="return confirm('Are you sure you want to delete this student?')" style="text-decoration: none; color: white;">
+                <button type="button" style="background-color: red; color: white; border: none; padding: 10px 20px; cursor: pointer;">
+                    <i class="bi bi-trash-fill"></i>Delete
+                </button>
+            </a>
         </div>
     </form>
 </body>
